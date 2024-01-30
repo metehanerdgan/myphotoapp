@@ -1,0 +1,5 @@
+vision:
+  credentials_file: "config/myphotoapp-412717-7662d103da43.json"
+
+kafka:
+  broker: localhost:9092

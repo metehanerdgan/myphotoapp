@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package photo;
+
+option go_package = "myphotoapp/internal/photo/";
+
+message FaceAnalysis {
+  string emotion = 1;
+  float confidence = 2;
+}
+
+message UploadedImage {
+  string id = 1;
+  string url = 2;
+  repeated FaceAnalysis face_analysis = 3;
+  int64 upload_time = 4; 
+}
+
+service PhotoService {
+  rpc UploadImage (UploadedImage) returns (UploadedImage);
+  rpc GetImageDetail (UploadedImage) returns (UploadedImage);
+  rpc GetImageFeed (GetImageFeedRequest) returns (GetImageFeedResponse);
+  rpc UpdateImageDetail (UploadedImage) returns (UploadedImage);
+}
+
+message GetImageFeedRequest {
+  int32 page_number = 1;
+  int32 page_size = 2;
+}
+
+message GetImageFeedResponse {
+  repeated UploadedImage images = 1;
+}

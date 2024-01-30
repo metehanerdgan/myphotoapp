@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "myphotoapp-412717",
+  "private_key_id": "7662d103da4315f2deb77dbde182edab135d39f0",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCycIWZXZH00k9+\nwOuSrAKu+mljvQ72mvMV+gpOJgzf5V3a1Tgfp3rzWapi9cyxqmEyAvdfZhqzPdTw\n6QdgXJPFWpLs0Ry0YYcMNQ/paQwWVe7QPKxrndVU6zm2YtMn80Gu1NV2FEDp7XXf\nPhbPQ3U8/W8dYFdRwXll9pWy07gj/ipwweo8BmQ14ifm9O0X8c1UQPdF9XGDHhGG\noiXGiNBjUWwU3F9iAw8JZv+DFm13juSFFbt1duc/qtrB0/hv+yn2kEmvd9Z3YNAY\nIftpSqpzntwwIAZIcgWqFA14NwdtqaCSRUiVzomh5GB9SmRc5nycHFzUFnnMVyw7\nUBHdkUKBAgMBAAECggEACRH6kIgQYvMmMrZVIyb9AFT4cqcjca1nQ6Vqma9W2/8T\nBr+FpoJDMZR/INM6vO5ngDAxz9az7vGEXfYsBFEGx+Z2bag+S8lhunqfnO867vW3\n4Ajj5zJ/xUNef+/FD2GB/YRfEPn7+yGxakNQy7QaBQG8gLARfQJKWY1i7Z/UDkXU\nevfugPF8XF//JqaKdRrJtEIwfwa3WQEB9kNqV/UFz/HJ88TenwAhrTNtuPUifZ31\naT2Khnuyl/LeC8nTtzNqfkBFAL9XcIDtvXIlZ6VlOmCVFfHhKY20urCoCoY8FzWV\nCyacBMVMop7YZMBuCD05Rj+UJ4OwM+pQDILE19NEYwKBgQDkuEPs/RUWnQRUmAUn\nrdEQk4aZhAOU3FEB8Z+sMw/yxUB4EyaveXS5a2TLv+OlTFdABEnpUTC5udTzNIjj\n+MET0a0+rbjbqygrdZXkTwHEv6jEj8cbiYpdPEk6r9HykQvcBPzCzB4iDjy9piuj\n8pT1psFELlCOF6zHvbmLPim94wKBgQDHuP+X+KbMvFG5UKqR5o4LK+glvCo5Mlu+\nvctGd6ISxmM/rGCUefQ0VRSc58vPomU340d0atk54kcVwXOKHbx9CXKemvW77QOn\nYV3kyLBP5ldgJwBH/zKL6UtDScDIHn3Tfv5OZezSNzWj7oiYFK0O9tPEyvLIWSPI\nWe3/HICrSwKBgQCVIqV/6QIQLa/+LOXnmongwiEZBqCDNylHGDMiSGVUylOgN/SY\npJx8rs8Zn/Si+uVFY8aB8SPRZp+5OX8tDy1ua+EIJqSL782QkOp85RtlHAfCq3GL\nviJPaxjgwHYoMXXHMCVUK15WnGv0yV5ZV7rTdrk8aOqzzDIoR8itR4pWOwKBgQCP\nIxYDW5BnoPvNHXPxdtQMS55oFPAJ5/56uFlMGodMf2Q4CRl6r+CF9Qf9395g49k4\n8amPVNh0NKiPfgKJVQB2eGPuKc69rYL13cFGK1K5ILM0VR9NeidGwJ9RDTWd9sRk\n5Fnr4/6TNkA6ScUZgY/57oodOvo+/iu39kOsl0fb+wKBgEUiHk43kOSOv0kgYlop\nCFmoipL9RjcwoEXmOZQ2ty56wAS6Qd4UV7XfVr9b6BMSVNCYgVEVEMZlbzEGbNpn\nVvmD8HKaebmM6JA/nATjcIKj/jCt/CY7xM3ftb11dTSrLPFRK/l7Mr/hmzBW1XDm\nUTFW5KntXCXxl+Br7GawFmyj\n-----END PRIVATE KEY-----\n",
+  "client_email": "myphotoapp@myphotoapp-412717.iam.gserviceaccount.com",
+  "client_id": "116529190701457418567",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/myphotoapp%40myphotoapp-412717.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
