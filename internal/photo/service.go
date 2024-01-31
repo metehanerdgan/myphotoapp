@@ -18,15 +18,17 @@ type Image struct {
 
 // PhotoService, fotoğraf işlemleriyle ilgili istekleri yöneten bir yapıdır.
 type PhotoService struct {
-	kafkaProducer *KafkaProducer
-	visionAPI     *VisionAPI
+	kafkaProducer  *KafkaProducer
+	visionAPI      *VisionAPI
+	uploadedImages []*UploadedImage // Yüklenen fotoğrafları saklamak için bir dilim
 }
 
 // NewPhotoService, yeni bir PhotoService örneği oluşturur.
 func NewPhotoService(kp *KafkaProducer, va *VisionAPI) *PhotoService {
 	return &PhotoService{
-		kafkaProducer: kp,
-		visionAPI:     va,
+		kafkaProducer:  kp,
+		visionAPI:      va,
+		uploadedImages: make([]*UploadedImage, 0), // Boş bir dilim oluşturur
 	}
 }
 
@@ -55,6 +57,9 @@ func (s *PhotoService) UploadImage(ctx context.Context, image *UploadedImage) (*
 		},
 		UploadTime: time.Now().Unix(),
 	}
+
+	s.uploadedImages = append(s.uploadedImages, uploadedImage)
+
 	// Kafka'ya asenkron bir şekilde Vision API için mesaj gönderir.
 	err = s.kafkaProducer.ProduceMessage("image-upload-topic", "Image Uploaded: "+uploadedImage.Id)
 	if err != nil {
@@ -172,17 +177,19 @@ func (s *PhotoService) GetImageFeed(ctx context.Context, req *GetImageFeedReques
 			})
 		}
 	}
-	// Belirli sayfalandırma işlemlerini yapar.
+	// Yüklenen fotoğrafları kullanın
 	var uploadPageImages []*UploadedImage
-	for _, img := range pageImages {
+	for _, img := range s.uploadedImages {
 		uploadPageImages = append(uploadPageImages, &UploadedImage{
 			Id:  img.Id,
 			Url: img.Url,
 			FaceAnalysis: []*FaceAnalysis{
 				{Emotion: img.FaceAnalysis[0].Emotion, Confidence: img.FaceAnalysis[0].Confidence},
 			},
+			UploadTime: img.UploadTime,
 		})
 	}
+
 	// Sayfalama sonuçlarını oluşturur.
 	response := &GetImageFeedResponse{
 		Images: uploadPageImages,

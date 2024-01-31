@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
-	"time"
 
 	"myphotoapp/internal/photo"
 
@@ -32,9 +32,6 @@ func main() {
 	kafkaProducer, err := photo.NewKafkaProducer()
 	if err != nil {
 		log.Fatalf("Kafka üretici başlatılamadı: %v", err)
-
-		log.Printf("\n")
-		log.Printf("\n")
 	}
 	defer kafkaProducer.Close()
 
@@ -47,53 +44,54 @@ func main() {
 	// PhotoService oluşturur.
 	photoService := photo.NewPhotoService(kafkaProducer, visionAPI)
 
-	// Örnek bir fotoğraf bilgisi oluşturur.
-	uploadedImage := &photo.UploadedImage{
-		Id:  "1",
+	// UploadImage örneği 1
+	image1 := &photo.UploadedImage{
 		Url: "https://png.pngtree.com/thumb_back/fw800/background/20230425/pngtree-woman-making-an-angry-face-with-her-eyebrows-crossed-image_2554181.jpg",
 	}
 
-	// UploadImage metodunu çağırarak fotoğrafı yükler.
-	response, err := photoService.UploadImage(context.Background(), uploadedImage)
+	// UploadImage metodunu kullanarak fotoğrafı yükler
+	_, err = photoService.UploadImage(context.Background(), image1)
 	if err != nil {
-		log.Fatalf("Fotoğraf yüklenirken hata oluştu: %v", err)
+		log.Fatal(err)
 	}
 
-	log.Printf("Yüklenen fotoğraf bilgisi: %v", response)
-	log.Printf("\n")
-	log.Printf("\n")
-
-	// GetImageDetail metodunu çağırarak fotoğraf detayını alır.
-	detail, err := photoService.GetImageDetail(context.Background(), uploadedImage)
-	if err != nil {
-		log.Fatalf("Fotoğraf detayı alınırken hata oluştu: %v", err)
+	// UploadImage örneği 2
+	image2 := &photo.UploadedImage{
+		Url: "https://www.aljazeera.com.tr/sites/default/files/styles/aljazeera_article_main_image/public/2014/04/16/face_shutter_main.jpg?itok=ED671aXO",
 	}
 
-	log.Printf("Fotoğraf detayı: %v", detail)
-	log.Printf("\n")
-	log.Printf("\n")
-	// GetImageFeed metodunu çağırarak fotoğraf beslemesini alır.
-	feedRequest := &photo.GetImageFeedRequest{
+	// UploadImage metodunu kullanarak fotoğrafı yükler
+	_, err = photoService.UploadImage(context.Background(), image2)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// GetImageFeed metodunu kullanarak yüklenen fotoğrafları listele
+	imageFeedResponse, err := photoService.GetImageFeed(context.Background(), &photo.GetImageFeedRequest{
 		PageSize:   10,
 		PageNumber: 1,
-	}
-	feed, err := photoService.GetImageFeed(context.Background(), feedRequest)
+	})
 	if err != nil {
-		log.Fatalf("Fotoğraf beslemesi alınırken hata oluştu: %v", err)
+		log.Fatal(err)
 	}
 
-	log.Printf("Fotoğraf beslemesi: %v", feed)
-	log.Printf("\n")
-	log.Printf("\n")
-	// Örnek bir güncellenecek fotoğraf detayı oluşturur.
-	updatedDetail := &photo.UploadedImage{
-		Id:  "1",
-		Url: "https://i.dha.com.tr/i/dha/75/480x360/61811b5a45d2a01ab04762b9.jpg",
+	// Liste sonuçlarını yazdır
+	fmt.Println("Fotoğraf Listesi:")
+	for _, img := range imageFeedResponse.Images {
+		fmt.Printf("ID: %s, URL: %s\n", img.Id, img.Url)
 
-		UploadTime: time.Now().Unix(),
+		// Fotoğrafın analiz bilgilerini de yazdır
+		for _, faceAnalysis := range img.FaceAnalysis {
+			fmt.Printf("  Analiz: %s, Güvenirlik Oranı: %f\n", faceAnalysis.Emotion, faceAnalysis.Confidence)
+		}
 	}
 
 	// UpdateImageDetail metodunu çağırarak fotoğraf detayını günceller.
+	updatedDetail := &photo.UploadedImage{
+		Id:  image1.Id,                                                                                                                  // Güncellenecek fotoğrafın ID'si
+		Url: "https://st3.depositphotos.com/1258191/17024/i/950/depositphotos_170241044-stock-photo-aggressive-angry-woman-yelling.jpg", // Yeni URL
+	}
+
 	updatedDetailResponse, err := photoService.UpdateImageDetail(context.Background(), updatedDetail)
 	if err != nil {
 		log.Fatalf("Fotoğraf detayı güncellenirken hata oluştu: %v", err)
