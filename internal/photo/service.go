@@ -117,7 +117,7 @@ func (s *PhotoService) GetImageFeed(ctx context.Context, req *GetImageFeedReques
 		pageNumber = 1
 	}
 
-	// Yüklenen fotoğrafları kullanın
+	// Yüklenen fotoğrafları kullanır
 	var uploadPageImages []*UploadedImage
 	for _, img := range s.uploadedImages {
 		uploadPageImages = append(uploadPageImages, &UploadedImage{
