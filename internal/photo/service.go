@@ -6,14 +6,17 @@ import (
 	"log"
 	"sort"
 	"time"
+	stdtime "time"
 )
+
+var now = stdtime.Now
 
 // Image, fotoğraf bilgilerini temsil eder.
 type Image struct {
 	Id           string
 	Url          string
 	FaceAnalysis []*FaceAnalysis
-	UploadTime   time.Time
+	UploadTime   int64
 }
 
 // PhotoService, fotoğraf işlemleriyle ilgili istekleri yöneten bir yapıdır.
@@ -55,7 +58,7 @@ func (s *PhotoService) UploadImage(ctx context.Context, image *UploadedImage) (*
 				Confidence: float32(faceAnalysisResult[0].Confidence),
 			},
 		},
-		UploadTime: time.Now().Unix(),
+		UploadTime: now().UTC().Unix(),
 	}
 
 	s.uploadedImages = append(s.uploadedImages, uploadedImage)
@@ -98,13 +101,14 @@ func (s *PhotoService) GetImageDetail(ctx context.Context, req *UploadedImage) (
 	return imageDetail, nil
 }
 
-// GetImageFeed, fotoğrafları yüklenme tarihine ve analiz değerlerine göre sıralayarak sayfalandıran işlemi gerçekleştirir.
+// GetImageFeed, yüklenen fotoğrafları yüklenme tarihine ve analiz değerlerine göre sıralayarak sayfalandıran işlemi gerçekleştirir.
 func (s *PhotoService) GetImageFeed(ctx context.Context, req *GetImageFeedRequest) (*GetImageFeedResponse, error) {
+
 	// Örnek bir sayfa büyüklüğü...
+
 	pageSize := req.PageSize
 	if pageSize <= 0 {
 		pageSize = 10
-
 	}
 
 	// Örnek bir sayfa numarası belirler.
@@ -113,37 +117,36 @@ func (s *PhotoService) GetImageFeed(ctx context.Context, req *GetImageFeedReques
 		pageNumber = 1
 	}
 
-	// Tüm fotoğrafları almak (örnek olarak iki fotoğraf ekledim.)
-	images := []*Image{
-		{
-			Id:           "1",
-			Url:          "https://example.com/image1.jpg",
-			FaceAnalysis: []*FaceAnalysis{{Emotion: "Joy", Confidence: 0.95}},
-			UploadTime:   time.Now().Add(-time.Hour * 24 * 3), // Örnek bir yükleme tarihi
-		},
-		{
-			Id:           "2",
-			Url:          "https://example.com/image2.jpg",
-			FaceAnalysis: []*FaceAnalysis{{Emotion: "Sorrow", Confidence: 0.75}},
-			UploadTime:   time.Now().Add(-time.Hour * 24 * 2),
-		},
+	// Yüklenen fotoğrafları kullanın
+	var uploadPageImages []*UploadedImage
+	for _, img := range s.uploadedImages {
+		uploadPageImages = append(uploadPageImages, &UploadedImage{
+			Id:  img.Id,
+			Url: img.Url,
+			FaceAnalysis: []*FaceAnalysis{
+				{Emotion: img.FaceAnalysis[0].Emotion, Confidence: img.FaceAnalysis[0].Confidence},
+			},
+			UploadTime: img.UploadTime,
+		})
 	}
 
-	// Fotoğrafları yüklenme tarihine ve analiz değerlerine göre sıralar.
-	sort.Slice(images, func(i, j int) bool {
+	// Yüklenen fotoğrafları yüklenme tarihine ve analiz değerlerine göre sıralar.
+	sort.Slice(uploadPageImages, func(i, j int) bool {
+		timeI := time.Unix(uploadPageImages[i].UploadTime, 0)
+		timeJ := time.Unix(uploadPageImages[j].UploadTime, 0)
+
 		// İlk olarak yüklenme tarihine göre sıralar.
-		if images[i].UploadTime.Equal(images[j].UploadTime) {
+		if timeI.Equal(timeJ) {
 			// Eğer yüklenme tarihleri aynıysa, analiz ortalamalarına göre sıralar.
-			avgEmotion1 := calculateAverageEmotion(images[i].FaceAnalysis)
-			avgEmotion2 := calculateAverageEmotion(images[j].FaceAnalysis)
+			avgEmotion1 := calculateAverageEmotion(uploadPageImages[i].FaceAnalysis)
+			avgEmotion2 := calculateAverageEmotion(uploadPageImages[j].FaceAnalysis)
 
 			return avgEmotion1 > avgEmotion2 // Büyükten küçüğe sıralar. (yüksek ortalama önce gelsin)
 		}
 
 		// Eğer yüklenme tarihleri farklıysa, tarih sıralamasını kullanır.
-		return images[i].UploadTime.After(images[j].UploadTime)
+		return timeI.After(timeJ)
 	})
-
 	// Sayfalama hesaplamalarını yapar.
 	startIndex := int((pageNumber - 1) * pageSize)
 	endIndex := int(pageNumber * pageSize)
@@ -152,13 +155,12 @@ func (s *PhotoService) GetImageFeed(ctx context.Context, req *GetImageFeedReques
 	if startIndex < 0 {
 		startIndex = 0
 	}
-	if endIndex > len(images) {
-		endIndex = len(images)
+	if endIndex > len(uploadPageImages) {
+		endIndex = len(uploadPageImages)
 	}
-
 	// Sayfa boyunca olan fotoğrafları alır.
 	var pageImages []*Image
-	for _, img := range images[startIndex:endIndex] {
+	for _, img := range uploadPageImages[startIndex:endIndex] {
 		if len(img.FaceAnalysis) > 0 {
 			pageImages = append(pageImages, &Image{
 				Id:  img.Id,
@@ -176,18 +178,6 @@ func (s *PhotoService) GetImageFeed(ctx context.Context, req *GetImageFeedReques
 				UploadTime:   img.UploadTime,
 			})
 		}
-	}
-	// Yüklenen fotoğrafları kullanın
-	var uploadPageImages []*UploadedImage
-	for _, img := range s.uploadedImages {
-		uploadPageImages = append(uploadPageImages, &UploadedImage{
-			Id:  img.Id,
-			Url: img.Url,
-			FaceAnalysis: []*FaceAnalysis{
-				{Emotion: img.FaceAnalysis[0].Emotion, Confidence: img.FaceAnalysis[0].Confidence},
-			},
-			UploadTime: img.UploadTime,
-		})
 	}
 
 	// Sayfalama sonuçlarını oluşturur.
