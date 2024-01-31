@@ -66,7 +66,18 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// GetImageFeed metodunu kullanarak yüklenen fotoğrafları listele
+	// UploadImage örneği 3
+	image3 := &photo.UploadedImage{
+		Url: "https://img3.stockfresh.com/files/k/kurhan/m/59/1185098_stock-photo-man.jpg",
+	}
+
+	// UploadImage metodunu kullanarak fotoğrafı yükler
+	_, err = photoService.UploadImage(context.Background(), image3)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// GetImageFeed metodunu kullanarak yüklenen fotoğrafları listeler
 	imageFeedResponse, err := photoService.GetImageFeed(context.Background(), &photo.GetImageFeedRequest{
 		PageSize:   10,
 		PageNumber: 1,
@@ -75,7 +86,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Liste sonuçlarını yazdır
+	// Liste sonuçlarını yazdırır
 	fmt.Println("Fotoğraf Listesi:")
 	for _, img := range imageFeedResponse.Images {
 		fmt.Printf("ID: %s, URL: %s\n", img.Id, img.Url)
@@ -86,19 +97,19 @@ func main() {
 		}
 	}
 
-	// UpdateImageDetail metodunu çağırarak fotoğraf detayını günceller.
-	updatedDetail := &photo.UploadedImage{
-		Id:  image1.Id,                                                                                                                  // Güncellenecek fotoğrafın ID'si
+	// Kullanıcıdan yeni bilgileri alır
+	newImageDetails := &photo.UploadedImage{
+		Id:  "2",                                                                                                                        // Güncellenecek fotoğrafın ID'si
 		Url: "https://st3.depositphotos.com/1258191/17024/i/950/depositphotos_170241044-stock-photo-aggressive-angry-woman-yelling.jpg", // Yeni URL
 	}
 
-	updatedDetailResponse, err := photoService.UpdateImageDetail(context.Background(), updatedDetail)
+	// Güncellenmiş fotoğraf detayını alır
+	updatedDetail, err := photoService.UpdateImageDetail(context.Background(), newImageDetails)
 	if err != nil {
 		log.Fatalf("Fotoğraf detayı güncellenirken hata oluştu: %v", err)
 	}
-	log.Printf("Güncellenmiş fotoğraf detayı: %v", updatedDetailResponse)
-	log.Printf("\n")
-	log.Printf("\n")
+
+	log.Printf("Güncellenmiş fotoğraf detayı: %v", updatedDetail)
 
 	// gRPC sunucu oluşturur.
 	grpcServer := grpc.NewServer()
@@ -108,8 +119,6 @@ func main() {
 	photo.RegisterPhotoServiceServer(grpcServer, photoServiceServerImpl)
 
 	log.Printf("gRPC sunucusu %s üzerinde dinleniyor", port)
-	log.Printf("\n")
-	log.Printf("\n")
 
 	// Sunucuyu başlatır.
 	if err := grpcServer.Serve(listener); err != nil {

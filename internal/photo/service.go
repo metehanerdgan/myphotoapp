@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"sort"
+	"strconv"
 	"time"
 	stdtime "time"
 )
@@ -24,6 +25,7 @@ type PhotoService struct {
 	kafkaProducer  *KafkaProducer
 	visionAPI      *VisionAPI
 	uploadedImages []*UploadedImage // Yüklenen fotoğrafları saklamak için bir dilim
+	lastImageID    int              // Son atanan ID'yi takip etmek için
 }
 
 // NewPhotoService, yeni bir PhotoService örneği oluşturur.
@@ -31,13 +33,17 @@ func NewPhotoService(kp *KafkaProducer, va *VisionAPI) *PhotoService {
 	return &PhotoService{
 		kafkaProducer:  kp,
 		visionAPI:      va,
-		uploadedImages: make([]*UploadedImage, 0), // Boş bir dilim oluşturur
+		uploadedImages: make([]*UploadedImage, 0),
+		lastImageID:    0, // Başlangıçta son atanan ID'yi sıfıra ayarlar
 	}
 }
 
 // UploadImage, yeni bir fotoğrafı sisteme yükleyen işlemi gerçekleştirir.
 func (s *PhotoService) UploadImage(ctx context.Context, image *UploadedImage) (*UploadedImage, error) {
 
+	// ID'yi bir artırarak yeni bir ID oluşturur
+	s.lastImageID++
+	newImageID := s.lastImageID
 	// Yüz analizi sonuçlarını alır.
 	faceAnalysisResult, err := s.visionAPI.AnalyzeFaces(ctx, image.Url)
 	if err != nil {
@@ -50,7 +56,7 @@ func (s *PhotoService) UploadImage(ctx context.Context, image *UploadedImage) (*
 	}
 	// Yüklenen fotoğrafı oluşturur.
 	uploadedImage := &UploadedImage{
-		Id:  "1",
+		Id:  strconv.Itoa(newImageID), // Yeni ID'yi stringe çevirip atar
 		Url: image.Url,
 		FaceAnalysis: []*FaceAnalysis{
 			{
@@ -64,7 +70,7 @@ func (s *PhotoService) UploadImage(ctx context.Context, image *UploadedImage) (*
 	s.uploadedImages = append(s.uploadedImages, uploadedImage)
 
 	// Kafka'ya asenkron bir şekilde Vision API için mesaj gönderir.
-	err = s.kafkaProducer.ProduceMessage("image-upload-topic", "Image Uploaded: "+uploadedImage.Id)
+	err = s.kafkaProducer.ProduceMessage("image-upload-topic", "Fotoğraf Yüklendi: "+uploadedImage.Id)
 	if err != nil {
 		log.Printf("Kafka'ya mesaj gönderirken hata oluştu: %v", err)
 	}
@@ -188,31 +194,47 @@ func (s *PhotoService) GetImageFeed(ctx context.Context, req *GetImageFeedReques
 	return response, nil
 }
 
+func (s *PhotoService) findImageByID(id string) *UploadedImage {
+	for _, img := range s.uploadedImages {
+		if img.Id == id {
+			return img
+		}
+	}
+	return nil // ID'ye sahip fotoğraf bulunamazsa nil döner
+}
+
 // UpdateImageDetail, fotoğraf detaylarını günceller.
 func (s *PhotoService) UpdateImageDetail(ctx context.Context, req *UploadedImage) (*UploadedImage, error) {
-	// Sadece eklerken değil güncellerken de yüz analizi sonuçlarını alır ve fotoğraf yolunu değiştirir sadece.
+
+	// findImageByID, belirli bir ID'ye sahip fotoğrafı bulur.
+
+	// Güncellenen fotoğrafın ID'sini kontrol eder
+	existingImage := s.findImageByID(req.Id)
+	if existingImage == nil {
+		return nil, fmt.Errorf("Güncellenmek istenen fotoğraf bulunamadı")
+	}
+
+	// Yeni URL için Vision API'yi kullanarak yüz analizi yapar
 	faceAnalysisResult, err := s.visionAPI.AnalyzeFaces(ctx, req.Url)
 	if err != nil {
 		return nil, fmt.Errorf("Yüz analizi yapılırken hata oluştu: %v", err)
 	}
 
-	// Yüz analizi sonuçları diliminin boş olup olmadığını kontrol eder.
+	// Yüz analizi sonuçları diliminin boş olup olmadığını kontrol eder
 	if len(faceAnalysisResult) == 0 {
 		return nil, fmt.Errorf("Yüz analizi sonuçları bulunamadı")
 	}
-	// Yüklenen fotoğrafı oluşturur.
-	updatedImage := &UploadedImage{
-		Id:  "1",
-		Url: req.Url,
-		FaceAnalysis: []*FaceAnalysis{
-			{
-				Emotion:    faceAnalysisResult[0].Emotion,
-				Confidence: float32(faceAnalysisResult[0].Confidence),
-			},
+
+	existingImage.Url = req.Url
+	existingImage.FaceAnalysis = []*FaceAnalysis{
+		{
+			Emotion:    faceAnalysisResult[0].Emotion,
+			Confidence: float32(faceAnalysisResult[0].Confidence),
 		},
-		UploadTime: time.Now().Unix(),
 	}
-	return updatedImage, nil
+	existingImage.UploadTime = time.Now().Unix()
+
+	return existingImage, nil
 }
 
 // calculateAverageEmotion, yüz analizi sonuçlarının ortalamasını hesaplar.
