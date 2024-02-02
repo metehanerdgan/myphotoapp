@@ -138,10 +138,10 @@ func (s *PhotoService) GetImageFeed(ctx context.Context, req *GetImageFeedReques
 
 	// Yüklenen fotoğrafları yüklenme tarihine ve analiz değerlerine göre sıralar.
 	sort.Slice(uploadPageImages, func(i, j int) bool {
+		// İlk olarak yüklenme tarihine göre sıralar.
 		timeI := time.Unix(uploadPageImages[i].UploadTime, 0)
 		timeJ := time.Unix(uploadPageImages[j].UploadTime, 0)
 
-		// İlk olarak yüklenme tarihine göre sıralar.
 		if timeI.Equal(timeJ) {
 			// Eğer yüklenme tarihleri aynıysa, analiz ortalamalarına göre sıralar.
 			avgEmotion1 := calculateAverageEmotion(uploadPageImages[i].FaceAnalysis)
