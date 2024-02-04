@@ -5,12 +5,23 @@ go 1.21.6
 require (
 	cloud.google.com/go/vision v1.2.0
 	github.com/confluentinc/confluent-kafka-go v1.9.2
+	github.com/jackc/pgx/v4 v4.18.1
 	google.golang.org/api v0.160.0
 	google.golang.org/grpc v1.61.0
 	google.golang.org/protobuf v1.32.0
+
 )
 
-require google.golang.org/genproto v0.0.0-20240125205218-1f4bbc51befe // indirect
+require (
+	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
+	github.com/jackc/pgconn v1.14.0 // indirect
+	github.com/jackc/pgio v1.0.0 // indirect
+	github.com/jackc/pgpassfile v1.0.0 // indirect
+	github.com/jackc/pgproto3/v2 v2.3.2 // indirect
+	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
+	github.com/jackc/pgtype v1.14.0 // indirect
+	google.golang.org/genproto v0.0.0-20240125205218-1f4bbc51befe // indirect
+)
 
 require (
 	cloud.google.com/go v0.112.0 // indirect

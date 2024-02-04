@@ -28,6 +28,23 @@ func main() {
 		log.Fatalf("Dinleme başarısız: %v", err)
 	}
 
+	// Veritabanı bağlantısını başlatır.
+	err = photo.InitDB()
+	if err != nil {
+		log.Fatalf("Veritabanı bağlantısı başlatılamadı: %v", err)
+	}
+	defer func() {
+		if cerr := photo.CloseDB(); cerr != nil {
+			log.Fatalf("Veritabanı bağlantısı kapatılamadı: %v", cerr)
+		}
+	}()
+
+	// "photos" tablosunu oluştur.
+	err = photo.CreatePhotoTable()
+	if err != nil {
+		log.Fatalf("Tablo oluşturulamadı: %v", err)
+	}
+
 	// Kafka üretici ve Vision API istemcisini oluşturur.
 	kafkaProducer, err := photo.NewKafkaProducer()
 	if err != nil {
@@ -49,7 +66,7 @@ func main() {
 		Url: "https://png.pngtree.com/thumb_back/fw800/background/20230425/pngtree-woman-making-an-angry-face-with-her-eyebrows-crossed-image_2554181.jpg",
 	}
 
-	// UploadImage metodunu kullanarak fotoğrafı yükler
+	// UploadImage metodunu kullanarak fotoğrafı yükler.
 	_, err = photoService.UploadImage(context.Background(), image1)
 	if err != nil {
 		log.Fatal(err)
@@ -60,7 +77,7 @@ func main() {
 		Url: "https://www.aljazeera.com.tr/sites/default/files/styles/aljazeera_article_main_image/public/2014/04/16/face_shutter_main.jpg?itok=ED671aXO",
 	}
 
-	// UploadImage metodunu kullanarak fotoğrafı yükler
+	// UploadImage metodunu kullanarak fotoğrafı yükler.
 	_, err = photoService.UploadImage(context.Background(), image2)
 	if err != nil {
 		log.Fatal(err)
@@ -71,13 +88,13 @@ func main() {
 		Url: "https://img3.stockfresh.com/files/k/kurhan/m/59/1185098_stock-photo-man.jpg",
 	}
 
-	// UploadImage metodunu kullanarak fotoğrafı yükler
+	// UploadImage metodunu kullanarak fotoğrafı yükler.
 	_, err = photoService.UploadImage(context.Background(), image3)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// GetImageFeed metodunu kullanarak yüklenen fotoğrafları listeler
+	// GetImageFeed metodunu kullanarak yüklenen fotoğrafları listeler.
 	imageFeedResponse, err := photoService.GetImageFeed(context.Background(), &photo.GetImageFeedRequest{
 		PageSize:   10,
 		PageNumber: 1,
@@ -86,24 +103,24 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Liste sonuçlarını yazdırır
+	// // Liste sonuçlarını yazdırır.
 	fmt.Println("Fotoğraf Listesi:")
 	for _, img := range imageFeedResponse.Images {
 		fmt.Printf("ID: %s, URL: %s\n", img.Id, img.Url)
 
-		// Fotoğrafın analiz bilgilerini de yazdır
+		// 	// Fotoğrafın analiz bilgilerini de yazdır.
 		for _, faceAnalysis := range img.FaceAnalysis {
 			fmt.Printf("  Analiz: %s, Güvenirlik Oranı: %f\n", faceAnalysis.Emotion, faceAnalysis.Confidence)
 		}
 	}
 
-	// Kullanıcıdan yeni bilgileri alır
+	// // Kullanıcıdan yeni bilgileri alır.
 	newImageDetails := &photo.UploadedImage{
 		Id:  "2",                                                                                                                        // Güncellenecek fotoğrafın ID'si
 		Url: "https://st3.depositphotos.com/1258191/17024/i/950/depositphotos_170241044-stock-photo-aggressive-angry-woman-yelling.jpg", // Yeni URL
 	}
 
-	// Güncellenmiş fotoğraf detayını alır
+	// // Güncellenmiş fotoğraf detayını alır.
 	updatedDetail, err := photoService.UpdateImageDetail(context.Background(), newImageDetails)
 	if err != nil {
 		log.Fatalf("Fotoğraf detayı güncellenirken hata oluştu: %v", err)
