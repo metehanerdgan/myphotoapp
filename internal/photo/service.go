@@ -224,7 +224,7 @@ func (s *PhotoService) GetImageFeed(ctx context.Context, req *GetImageFeedReques
 	if pageNumber <= 0 {
 		pageNumber = 1
 	}
-	// Yüklenen fotoğrafları veritabanından çekiyoruz.
+	// Yüklenen fotoğrafları veritabanından çeker.
 	var err error
 	s.dbImages, err = GetPhotosFromDB()
 	if err != nil {
