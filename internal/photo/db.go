@@ -13,7 +13,7 @@ import (
 const (
 	dbHost     = "localhost"
 	dbPort     = 5432
-	dbName     = "postgres"
+	dbName     = "myphotoapp"
 	dbUser     = "postgres"
 	dbPassword = "12345"
 )
