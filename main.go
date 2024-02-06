@@ -114,13 +114,13 @@ func main() {
 		}
 	}
 
-	// // Kullanıcıdan yeni bilgileri alır.
+	// Kullanıcıdan yeni bilgileri alır.
 	newImageDetails := &photo.UploadedImage{
 		Id:  "2",                                                                                                                        // Güncellenecek fotoğrafın ID'si
 		Url: "https://st3.depositphotos.com/1258191/17024/i/950/depositphotos_170241044-stock-photo-aggressive-angry-woman-yelling.jpg", // Yeni URL
 	}
 
-	// // Güncellenmiş fotoğraf detayını alır.
+	// Güncellenmiş fotoğraf detayını alır.
 	updatedDetail, err := photoService.UpdateImageDetail(context.Background(), newImageDetails)
 	if err != nil {
 		log.Fatalf("Fotoğraf detayı güncellenirken hata oluştu: %v", err)
